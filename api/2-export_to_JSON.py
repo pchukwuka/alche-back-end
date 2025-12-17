@@ -1,49 +1,35 @@
-.
-rts TODO list data for a given employee to JSON.
-"""
-
-import json
 #!/usr/bin/python3
-"""
-Exports TODO list data for a given employee to JSON.
-""
-
 import json
-import sys
 import requests
+import sys
+
 
 if __name__ == "__main__":
-    if len(sys.argv) < 2:
+    if len(sys.argv) != 2:
         sys.exit(1)
 
     user_id = sys.argv[1]
 
-    # Base URLs
-    url_user = f"https://jsonplaceholder.typicode.com/users/{user_id}"
-    url_todos = f"https://jsonplaceholder.typicode.com/todos?userId={user_id}"
+    user_url = f"https://jsonplaceholder.typicode.com/users/{user_id}"
+    todos_url = (
+        f"https://jsonplaceholder.typicode.com/todos?userId={user_id}"
+    )
 
-    # Fetch user info
-    user_res = requests.get(url_user)
-    user = user_res.json()
-    username = user.get("username")
+    user_data = requests.get(user_url).json()
+    employee_username = user_data.get("username")
 
-    # Fetch todos
-    todos_res = requests.get(url_todos)
-    todos = todos_res.json()
+    todos = requests.get(todos_url).json()
 
-    # Build the list of tasks
-    tasks_list = []
-    for task in todos:
-        tasks_list.append({
+    task_list = [
+        {
             "task": task.get("title"),
             "completed": task.get("completed"),
-            "username": username
-        })
+            "username": employee_username
+        }
+        for task in todos
+    ]
 
-    # Final data structure
-    data = {user_id: tasks_list}
+    output = {user_id: task_list}
 
-    # Write to JSON file USER_ID.json
-    filename = f"{user_id}.json"
-    with open(filename, "w") as f:
-        json.dump(data, f)
+    with open(f"{user_id}.json", "w") as json_file:
+        json.dump(output, json_file)
